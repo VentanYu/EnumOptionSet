@@ -14,12 +14,14 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftDiagnostics
+import Foundation
 
 public struct EnumOptionSetMacro: MemberMacro {
 
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
 
@@ -56,7 +58,7 @@ public struct EnumOptionSetMacro: MemberMacro {
         /// Gets the raw value type from the generic clause of the macro attribute.
         /// For example, `Int8` from `@EnumOptionSet<Int8>`.
         let typeFromGenericClause = {
-            node.attributeName.as(IdentifierTypeSyntax.self)?.genericArgumentClause?.arguments.first?.argument.trimmed
+            node.attributeName.as(IdentifierTypeSyntax.self)?.genericArgumentClause?.arguments.first?.argument.as(TypeSyntax.self)
         }
 
         /// Gets the raw value type from the first argument of the macro attribute.
@@ -121,7 +123,7 @@ public struct EnumOptionSetMacro: MemberMacro {
 
         /// Bit count of the raw value type, inferred from the type name.
         /// Defaults to `64` for integers, or `Int.max` for unknown types or when overflow check is disabled.
-        let rawValueBitCount = rawValueType.description.lowercased().contains("int") && checkOverflow ? Int(rawValueType.description.trimmingCharacters(in: .decimalDigits.inverted)) ?? 64 : .max
+        let rawValueBitCount = rawValueType.trimmedDescription.lowercased().contains("int") && checkOverflow ? Int(rawValueType.trimmedDescription.trimmingCharacters(in: CharacterSet.decimalDigits.inverted)) ?? 64 : .max
 
         /// Flattened array of enumeration case elements.
         let caseElements = enumeration.memberBlock.members.compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }.flatMap(\.elements)
@@ -340,6 +342,10 @@ extension EnumOptionSetMacro {
             }
         }
 
+        var categoryChain: [SwiftDiagnostics.DiagnosticCategory] {
+            []
+        }
+
         var fixItID: SwiftDiagnostics.MessageID {
             diagnosticID
         }
@@ -348,7 +354,7 @@ extension EnumOptionSetMacro {
 
 extension DeclModifierSyntax {
     var isPublic: Bool {
-        if case .keyword(let keyword) = name.tokenKind, keyword == .public { true } else { false }
+        name.text == "public"
     }
 }
 
