@@ -291,7 +291,7 @@ public struct EnumOptionSetMacro: MemberMacro {
             
             // Generates a method to check if the option set contains a specific enum case.
             containsMethod = try FunctionDeclSyntax("\(accessModifier)func contains(_ enumCase: \(enumeration.name.trimmed)) -> Bool") { """
-                contains(.init(cases: [enumCase]))
+                cases.contains(enumCase)
                 """
             }
             containsMethod?.leadingTrivia = """
