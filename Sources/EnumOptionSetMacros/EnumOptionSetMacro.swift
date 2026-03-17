@@ -262,6 +262,7 @@ public struct EnumOptionSetMacro: MemberMacro {
 
         var cases: VariableDeclSyntax?
         var initCases: InitializerDeclSyntax?
+        var containsMethod: FunctionDeclSyntax?
         if !hasAssociatedValues {
             // Generates a computed property returning an array of enum cases corresponding to the bit mask.
             cases = try VariableDeclSyntax("\(accessModifier)var cases: [\(enumeration.name.trimmed)]") { """
@@ -287,6 +288,16 @@ public struct EnumOptionSetMacro: MemberMacro {
                 /// Creates a new option set with the specified array of `\(enumeration.name.text)` enum cases.
                 /// - Parameter cases: The array of `\(enumeration.name.text)` enum cases corresponding to the `rawValue` bit mask.\n
                 """
+            
+            // Generates a method to check if the option set contains a specific enum case.
+            containsMethod = try FunctionDeclSyntax("\(accessModifier)func contains(_ enumCase: \(enumeration.name.trimmed)) -> Bool") { """
+                contains(.init(cases: [enumCase]))
+                """
+            }
+            containsMethod?.leadingTrivia = """
+                /// Returns a Boolean value indicating whether the option set contains the specified enum case.
+                /// - Parameter enumCase: The enum case to look for in the option set.\n
+                """
         }
 
         // Generates an option set structure with all previously generated members.
@@ -302,6 +313,7 @@ public struct EnumOptionSetMacro: MemberMacro {
             if let debugDescription { debugDescription }
             if let cases { cases }
             if let initCases { initCases }
+            if let containsMethod { containsMethod }
         }
 
         return [.init(setStructure)]

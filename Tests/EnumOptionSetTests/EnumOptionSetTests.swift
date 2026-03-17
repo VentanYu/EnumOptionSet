@@ -106,6 +106,11 @@ func casesExpandedSource(_ elements: String) -> String {
                     }
                 }
             }
+            /// Returns a Boolean value indicating whether the option set contains the specified enum case.
+            /// - Parameter enumCase: The enum case to look for in the option set.
+            func contains(_ enumCase: ShippingOption) -> Bool {
+                contains(.init(cases: [enumCase]))
+            }
     """
 }
 
@@ -185,6 +190,11 @@ let publicEnumExpandedSource = #"""
                         result.formUnion(element.0)
                     }
                 }
+            }
+            /// Returns a Boolean value indicating whether the option set contains the specified enum case.
+            /// - Parameter enumCase: The enum case to look for in the option set.
+            public func contains(_ enumCase: ShippingOption) -> Bool {
+                contains(.init(cases: [enumCase]))
             }
         }
     }
